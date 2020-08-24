@@ -176,13 +176,15 @@ def solve_kuz_ram():
     #total Q, stemming is not included
     total_charge_nostem = total_charge - subdrilling_charge
     #WS of the whole hole
-    total_weight_strenght = (float(textweb.get()) * (bottom_charge - subdrilling_charge) + float(textwec.get()) * column_charge)/(bottom_charge + column_charge - subdrilling_charge)
+    total_weight_strenght = 100*(float(textweb.get()) * (bottom_charge - subdrilling_charge) + float(textwec.get()) * column_charge)/(bottom_charge + column_charge - subdrilling_charge)
 
     #Power factor, which is in gr/ton
     power_factor = total_charge * 1000 / ton_hole
 
     #50 prob which is in mm
-    d_50 = float(textrf.get()) * 10 * (ton_hole /(float(textrd.get()) * total_charge))**0.8 * total_charge **(1/6) * (115/total_weight_strenght) ** 0.633
+    #textrf is rockfactor
+    #textrd is rockdensity
+    d_50 = float(textrf.get()) * 10 * ((ton_hole /(float(textrd.get()) * total_charge))**0.8) * (total_charge **(1/6)) * ((115/total_weight_strenght) ** 0.633)
 
     #Uniformity index
     if pattern_text.get() == "Staggered":
@@ -206,6 +208,7 @@ def solve_kuz_ram():
     fig = plt.figure(figsize = (10,10))
     ax = fig.add_subplot(111)
     ax.plot(data['Size_Particle'], data.index)
+    ax.annotate("P80 is: {}".format(round(data.loc[80],2)), xy = (data.loc[80],80), xytext = (data.loc[80] , 82), arrowprops = dict(facecolor = 'black'))
     plt.xlabel("Size (cm)")
     plt.ylabel("Passing Probability")
     plt.show()
