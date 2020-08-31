@@ -1,24 +1,25 @@
 import tkinter
 from tkinter import ttk
-import matplotlib.pyplot as plt 
+import matplotlib
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.figure import Figure
 import pandas as pd
 import numpy as np
-import plotly.express as px
-import plotly.graph_objects as go
-from plotly.subplots import make_subplots 
 import math
 import backend
 
 app = tkinter.Tk()
 app.wm_title("Blasting Software")
-app.geometry('600x800')
+app.geometry('1200x600')
 database = backend.Dabase("blasting_db.db")
 #These ones are inputs for the explosive
 app_parent = ttk.Notebook(app)
 app_1 = ttk.Frame(app_parent)
 app_2 = ttk.Frame(app_parent)
+app_3 = ttk.Frame(app_parent)
 app_parent.add(app_1, text = "Estimation")
 app_parent.add(app_2, text = "Databases")
+app_parent.add(app_3, text = "Rock Factor Parameters")
 explosive_label = tkinter.Label(app_1, text = "Explosive ", font='Helvetica 14 bold')
 explosive_label.grid(row = 0, column = 0)
 
@@ -142,11 +143,19 @@ cbox_pattern.grid(row= 16, column = 1)
 rock_label = tkinter.Label(app_1, text = "Rock Properties", font='Helvetica 14 bold')
 rock_label.grid(row = 17, column = 0)
 
+
+#function to make parameters window for rock factor
+def raise_frame(frame):
+    frame.tkraise()
+    #switch frames???
+    
 rock_factor = tkinter.Label(app_1, text = "Rock Factor")
 rock_factor.grid(row = 18, column = 0)
 textrf = tkinter.DoubleVar()
 rock_factor_input = tkinter.Entry(app_1, textvariable = textrf, width = 21)
 rock_factor_input.grid(row = 18, column = 1)
+rock_factor_button = tkinter.Button(app_1, text = 'Parameters?', command = lambda: raise_frame(app_3))
+rock_factor_button.grid(row = 18, column = 3)
 
 rock_density = tkinter.Label(app_1, text = "Rock Density")
 rock_density.grid(row = 19, column = 0)
@@ -167,6 +176,7 @@ def solve_kuz_ram():
     #Height of explosive that is in the column (this is different dfor the bottom)
     h_explosiv_column = h_column - float(texthf.get())
     #Q for bottom as well for column
+    #texthf is height of explosive at the bottom
     bottom_charge = 0.5067 * float(text_dens.get()) * (float(hole_diameter_text.get()) **2) * float(texthf.get())
     column_charge = 0.5067 * float(textdec.get()) * (float(hole_diameter_text.get()) **2) * h_explosiv_column
     percentage_bottom_charge = bottom_charge * 100 / (bottom_charge + column_charge)
@@ -205,13 +215,21 @@ def solve_kuz_ram():
         #PLEASE LOOK AT THESE VALUES.... THEY ARE ABOVE 10m.!!!!!!!!
         data.loc[i] = math.exp((np.log(np.log(1/ (1- i/100))) + uniform_index * np.log(particular_size/10)) / uniform_index)
         
-    fig = plt.figure(figsize = (10,10))
+    fig = Figure(figsize = (5,5))
     ax = fig.add_subplot(111)
     ax.plot(data['Size_Particle'], data.index)
-    ax.annotate("P80 is: {}".format(round(data.loc[80],2)), xy = (data.loc[80],80), xytext = (data.loc[80] , 82), arrowprops = dict(facecolor = 'black'))
-    plt.xlabel("Size (cm)")
-    plt.ylabel("Passing Probability")
-    plt.show()
+    ax.annotate("P80 is: {} cm".format(round(data.loc[80]['Size_Particle'],2)), xy = (data.loc[80],80), arrowprops = dict(facecolor = 'black'))
+    ax.annotate("Q. total: {} kg".format(round(total_charge,2)), xy = (50,60))
+    ax.annotate("Q. bottom: {} kg".format(round(bottom_charge,2)), xy = (50,55))
+    ax.annotate("Q. column: {} kg".format(round(column_charge,2)), xy = (50,50))
+    ax.annotate("PF: {} gr/ton".format(round(power_factor,2)), xy = (50,30))
+    ax.set_title("Fragmentation Curve")
+    ax.set_xlabel("Size (cm)")
+    ax.set_ylabel("Passing Probability")
+    
+    canvas = FigureCanvasTkAgg(fig, master = app_1)
+    canvas.get_tk_widget().grid(rowspan = 30, column = 4, row = 0)
+    canvas.draw()
 
 
 
