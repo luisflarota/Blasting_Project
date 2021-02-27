@@ -18,3 +18,8 @@
 
 
     ![estimation](https://user-images.githubusercontent.com/64980133/109396946-1b4f2800-7902-11eb-8be9-b3400bb3702a.png)
+
+
+3. ##### Issues:
+
+    - **"Rock parameters" tab is still on development**. However, as far as this is developed, you can calculate it by your own and input that!
