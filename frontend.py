@@ -14,12 +14,14 @@ app.geometry('1200x600')
 database = backend.Dabase("blasting_db.db")
 #These ones are inputs for the explosive
 app_parent = ttk.Notebook(app)
-app_1 = ttk.Frame(app_parent)
-app_2 = ttk.Frame(app_parent)
-app_3 = ttk.Frame(app_parent)
+app_1 = ttk.Frame(master = app_parent)
+app_2 = ttk.Frame(master = app_parent)
+app_3 = ttk.Frame(master = app_parent)
 app_parent.add(app_1, text = "Estimation")
 app_parent.add(app_2, text = "Databases")
 app_parent.add(app_3, text = "Rock Factor Parameters")
+
+#APP1_BEGINNING
 explosive_label = tkinter.Label(app_1, text = "Explosive ", font='Helvetica 14 bold')
 explosive_label.grid(row = 0, column = 0)
 
@@ -145,16 +147,17 @@ rock_label.grid(row = 17, column = 0)
 
 
 #function to make parameters window for rock factor
-def raise_frame(frame):
-    frame.tkraise()
+
     #switch frames???
-    
+def change_to_3():
+    app_parent.select(app_3)
+
 rock_factor = tkinter.Label(app_1, text = "Rock Factor")
 rock_factor.grid(row = 18, column = 0)
 textrf = tkinter.DoubleVar()
 rock_factor_input = tkinter.Entry(app_1, textvariable = textrf, width = 21)
 rock_factor_input.grid(row = 18, column = 1)
-rock_factor_button = tkinter.Button(app_1, text = 'Parameters?', command = lambda: raise_frame(app_3))
+rock_factor_button = tkinter.Button(app_1, text = 'Parameters?', command = change_to_3)
 rock_factor_button.grid(row = 18, column = 3)
 
 rock_density = tkinter.Label(app_1, text = "Rock Density")
@@ -215,14 +218,14 @@ def solve_kuz_ram():
         #PLEASE LOOK AT THESE VALUES.... THEY ARE ABOVE 10m.!!!!!!!!
         data.loc[i] = math.exp((np.log(np.log(1/ (1- i/100))) + uniform_index * np.log(particular_size/10)) / uniform_index)
         
-    fig = Figure(figsize = (5,5))
+    fig = Figure(figsize = (7,5))
     ax = fig.add_subplot(111)
     ax.plot(data['Size_Particle'], data.index)
     ax.annotate("P80 is: {} cm".format(round(data.loc[80]['Size_Particle'],2)), xy = (data.loc[80],80), arrowprops = dict(facecolor = 'black'))
-    ax.annotate("Q. total: {} kg".format(round(total_charge,2)), xy = (50,60))
-    ax.annotate("Q. bottom: {} kg".format(round(bottom_charge,2)), xy = (50,55))
-    ax.annotate("Q. column: {} kg".format(round(column_charge,2)), xy = (50,50))
-    ax.annotate("PF: {} gr/ton".format(round(power_factor,2)), xy = (50,30))
+    ax.annotate("Q. total: {} kg".format(round(total_charge,2)), xy = (20,60))
+    ax.annotate("Q. bottom: {} kg".format(round(bottom_charge,2)), xy = (20,55))
+    ax.annotate("Q. column: {} kg".format(round(column_charge,2)), xy = (20,50))
+    ax.annotate("PF: {} gr/ton".format(round(power_factor,2)), xy = (20,30))
     ax.set_title("Fragmentation Curve")
     ax.set_xlabel("Size (cm)")
     ax.set_ylabel("Passing Probability")
@@ -237,7 +240,7 @@ def solve_kuz_ram():
 button_solve = tkinter.Button(app_1, text = "Get Kuz Ram", width = 20, command = solve_kuz_ram)
 button_solve.grid(row = 20, columnspan = 2)
 
-#TAB2
+#APP2_BEGINNING
 app2_title = tkinter.Label(app_2, text = "Explosives Database", font = "Helvetica 14 bold")
 app2_title.grid(row = 0, column = 1)
 
@@ -332,6 +335,9 @@ delete_explosive.grid(row = 3, column =4)
 
 update_explosive = tkinter.Button(app_2, text = "Update", bg = "white", width = 17, command = update)
 update_explosive.grid(row = 4, column =4)
+
+#APP3 BEGINNING
+
 
 app_parent.pack(expand = 1, fill = 'both')
 app.mainloop()
