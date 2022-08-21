@@ -1,13 +1,17 @@
+#!/usr/bin/env python3.8
+# -*- coding: utf-8 -*-
+import math
 import tkinter
 from tkinter import ttk
-import matplotlib
+
+import numpy as np
+import pandas as pd
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
-import pandas as pd
-import numpy as np
-import math
+
 import backend
 
+# Instantiate the tkinker gui
 app = tkinter.Tk()
 app.wm_title("Blasting Software")
 app.geometry('1200x600')
@@ -92,44 +96,44 @@ ws_explosive_column.grid(row = 7, column = 1)
 #Design Inputs
 design_label = tkinter.Label(app_1, text = "Design", font='Helvetica 14 bold')
 design_label.grid(row = 8, column = 0)
-hole_diameter = tkinter.Label(app_1, text = "Hole Diameter")
+hole_diameter = tkinter.Label(app_1, text = "Hole Diameter (in.)")
 hole_diameter.grid(row = 9, column = 0)
 
 hole_diameter_text = tkinter.DoubleVar()
 cbox_hole_diameter = ttk.Combobox(app_1, width = 18, values = [10, 11, 12, 13, 14], textvariable = hole_diameter_text)
 cbox_hole_diameter.grid(row= 9, column = 1)
 
-bench_label = tkinter.Label(app_1, text = "Bench height")
+bench_label = tkinter.Label(app_1, text = "Bench height (m.)")
 bench_label.grid(row = 10, column = 0)
 textbh = tkinter.DoubleVar()
 bench_height_input = tkinter.Entry(app_1, textvariable = textbh, width = 21)
 bench_height_input.grid(row = 10, column = 1)
 
-burden = tkinter.Label(app_1, text = "Burden")
+burden = tkinter.Label(app_1, text = "Burden (m.)")
 burden.grid(row = 11, column = 0)
 textbi = tkinter.DoubleVar()
 burden_input = tkinter.Entry(app_1, textvariable = textbi, width = 21)
 burden_input.grid(row = 11, column = 1)
 
-spacing = tkinter.Label(app_1, text = "Spacing")
+spacing = tkinter.Label(app_1, text = "Spacing (m.)")
 spacing.grid(row = 12, column = 0)
 textsi = tkinter.DoubleVar()
 spacing_input = tkinter.Entry(app_1, textvariable = textsi, width = 21)
 spacing_input.grid(row = 12, column = 1)
 
-subdrill = tkinter.Label(app_1, text = "Sub-drilling")
+subdrill = tkinter.Label(app_1, text = "Sub-drilling (m.)")
 subdrill.grid(row = 13, column = 0)
 textsd = tkinter.DoubleVar()
 subdrill_input = tkinter.Entry(app_1, textvariable = textsd, width = 21)
 subdrill_input.grid(row = 13, column = 1)
 
-stemm = tkinter.Label(app_1, text = "Stemming")
+stemm = tkinter.Label(app_1, text = "Stemming (m.)")
 stemm.grid(row = 14, column = 0)
 textstem = tkinter.DoubleVar()
 stemming_input = tkinter.Entry(app_1, textvariable = textstem, width = 21)
 stemming_input.grid(row = 14, column = 1)
 
-drill_des = tkinter.Label(app_1, text = "Drilling desviation")
+drill_des = tkinter.Label(app_1, text = "Drilling desviation (m.)")
 drill_des.grid(row = 15, column = 0)
 textdd = tkinter.DoubleVar()
 drill_des_input = tkinter.Entry(app_1, textvariable = textdd, width = 21)
@@ -160,7 +164,7 @@ rock_factor_input.grid(row = 18, column = 1)
 rock_factor_button = tkinter.Button(app_1, text = 'Parameters?', command = change_to_3)
 rock_factor_button.grid(row = 18, column = 3)
 
-rock_density = tkinter.Label(app_1, text = "Rock Density")
+rock_density = tkinter.Label(app_1, text = "Rock Density (kg/m3)")
 rock_density.grid(row = 19, column = 0)
 textrd = tkinter.DoubleVar()
 rock_density_input = tkinter.Entry(app_1, textvariable = textrd, width = 21)
@@ -174,40 +178,55 @@ rock_density_input.grid(row = 19, column = 1)
 #Solving the problem
 def solve_kuz_ram():
     h_column = float(textbh.get()) - float(textstem.get()) + float(textsd.get())
-    #Tons/hole
+    # Tons/hole
     ton_hole = float(textbi.get()) * float(textsi.get()) * float(textbh.get()) * float(textrd.get())
-    #Height of explosive that is in the column (this is different dfor the bottom)
+    # Height of explosive that is in the column (this is different dfor the bottom)
     h_explosiv_column = h_column - float(texthf.get())
-    #Q for bottom as well for column
-    #texthf is height of explosive at the bottom
-    bottom_charge = 0.5067 * float(text_dens.get()) * (float(hole_diameter_text.get()) **2) * float(texthf.get())
-    column_charge = 0.5067 * float(textdec.get()) * (float(hole_diameter_text.get()) **2) * h_explosiv_column
-    percentage_bottom_charge = bottom_charge * 100 / (bottom_charge + column_charge)
-    subdrilling_charge = 0.5067 * text_dens.get() * (float(hole_diameter_text.get()) **2) * float(textsd.get())
-    #total Q, stemming is included
+    # Q for bottom as well for column
+    # Texthf is height of explosive at the bottom
+    bottom_charge = 0.5067 * float(
+        text_dens.get()
+        ) * (float(hole_diameter_text.get()) **2) * float(texthf.get())
+    column_charge = 0.5067 * float(
+        textdec.get()
+        ) * (float(hole_diameter_text.get()) **2) * h_explosiv_column
+    subdrilling_charge = 0.5067 * text_dens.get() * (
+        float(hole_diameter_text.get()) **2
+        ) * float(textsd.get())
+    # total Q, stemming is included
     total_charge = bottom_charge + column_charge
-    #total Q, stemming is not included
+    # total Q, stemming is not included
     total_charge_nostem = total_charge - subdrilling_charge
-    #WS of the whole hole
-    total_weight_strenght = 100*(float(textweb.get()) * (bottom_charge - subdrilling_charge) + float(textwec.get()) * column_charge)/(bottom_charge + column_charge - subdrilling_charge)
-
-    #Power factor, which is in gr/ton
+    # WS of the whole hole
+    total_weight_strenght = 100*(
+        float(textweb.get()) * (bottom_charge - subdrilling_charge) + float(textwec.get()) * column_charge
+        )/(bottom_charge + column_charge - subdrilling_charge)
+    # Power factor, which is in gr/ton
     power_factor = total_charge * 1000 / ton_hole
-
-    #50 prob which is in mm
-    #textrf is rockfactor
-    #textrd is rockdensity
-    d_50 = float(textrf.get()) * 10 * ((ton_hole /(float(textrd.get()) * total_charge))**0.8) * (total_charge **(1/6)) * ((115/total_weight_strenght) ** 0.633)
-
-    #Uniformity index
+    # 50 prob which is in mm
+    # textrf is rockfactor
+    # textrd is rockdensity
+    d_50 = float(textrf.get()) * 10 * (
+        (ton_hole /(float(textrd.get()) * total_charge)
+        )**0.8
+        ) * (total_charge **(1/6)) * ((115/total_weight_strenght) ** 0.633)
+    # Uniformity index
     if pattern_text.get() == "Staggered":
         pattern_value = 1.1
     else:
         pattern_value = 1
-    uniform_index = pattern_value * ((h_column - float(textsd.get()))/float(textbh.get()) * (2.2 - 14 * float(textbi.get())/(float(hole_diameter_text.get()) * 25.4)) * \
-        ((1 + float(textsi.get())/float(textbi.get()))/2) ** 0.5 * (1 - (float(textdd.get())/float(textbi.get()))) * (abs(bottom_charge - column_charge) / (bottom_charge+column_charge) + 0.1) ** 0.1)
+    uniform_index = pattern_value * (
+        (
+            h_column - float(textsd.get())
+        )/float(textbh.get()) * (
+            2.2 - 14 * float(textbi.get())/(float(hole_diameter_text.get()) * 25.4)
+            ) *(
+                (1 + float(textsi.get())/float(textbi.get()))/2
+                ) ** 0.5 * (1 - (float(textdd.get())/float(textbi.get()))) * (
+                    abs(bottom_charge - column_charge) / (bottom_charge+column_charge) + 0.1
+                    ) ** 0.1
+                    )
     uniform_index = round(uniform_index, 2)
-
     #Particular size
     particular_size = d_50 / (0.693 ** (1/uniform_index))
     particular_size = round(particular_size, 0)
@@ -222,10 +241,10 @@ def solve_kuz_ram():
     ax = fig.add_subplot(111)
     ax.plot(data['Size_Particle'], data.index)
     ax.annotate("P80 is: {} cm".format(round(data.loc[80]['Size_Particle'],2)), xy = (data.loc[80],80), arrowprops = dict(facecolor = 'black'))
-    ax.annotate("Q. total: {} kg".format(round(total_charge,2)), xy = (20,60))
-    ax.annotate("Q. bottom: {} kg".format(round(bottom_charge,2)), xy = (20,55))
-    ax.annotate("Q. column: {} kg".format(round(column_charge,2)), xy = (20,50))
-    ax.annotate("PF: {} gr/ton".format(round(power_factor,2)), xy = (20,30))
+    ax.annotate("Q. total: {} kg".format(round(total_charge,2)), xy = (1,60))
+    ax.annotate("Q. bottom: {} kg".format(round(bottom_charge,2)), xy = (1,55))
+    ax.annotate("Q. column: {} kg".format(round(column_charge,2)), xy = (1,50))
+    ax.annotate("PF: {} gr/ton".format(round(power_factor,2)), xy = (1,30))
     ax.set_title("Fragmentation Curve")
     ax.set_xlabel("Size (cm)")
     ax.set_ylabel("Passing Probability")
@@ -250,25 +269,25 @@ n_explos = tkinter.StringVar()
 name_exp = tkinter.Entry(app_2, textvariable = n_explos, width = 21)
 name_exp.grid(row = 1, column =1)
 
-den_explosive = tkinter.Label(app_2, text = "Density: ")
+den_explosive = tkinter.Label(app_2, text = "Density (gr./cm3): ")
 den_explosive.grid(row = 2, column = 0)
 den_explos = tkinter.DoubleVar()
 den_exp = tkinter.Entry(app_2, textvariable = den_explos, width = 21)
 den_exp.grid(row = 2, column =1)
 
-vod_explosive = tkinter.Label(app_2, text = "VOD: ")
+vod_explosive = tkinter.Label(app_2, text = "VOD (m/s):")
 vod_explosive.grid(row = 3, column = 0)
 vod_explos = tkinter.DoubleVar()
 vod_exp = tkinter.Entry(app_2, textvariable = vod_explos, width = 21)
 vod_exp.grid(row = 3, column =1)
 
-pd_explosive = tkinter.Label(app_2, text = "Det. Pressure: ")
+pd_explosive = tkinter.Label(app_2, text = "Det. Pressure (kbar.): ")
 pd_explosive.grid(row = 4, column = 0)
 pd_explos = tkinter.DoubleVar()
 pd_exp = tkinter.Entry(app_2, textvariable = pd_explos, width = 21)
 pd_exp.grid(row = 4, column =1)
 
-ene_explosive = tkinter.Label(app_2, text = "Energy: ")
+ene_explosive = tkinter.Label(app_2, text = "Energy (kcal/kg.): ")
 ene_explosive.grid(row = 5, column = 0)
 ene_explos = tkinter.DoubleVar()
 ene_exp = tkinter.Entry(app_2, textvariable = ene_explos, width = 21)
