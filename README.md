@@ -6,7 +6,7 @@
 
 [1. The Problem](#s2) <br>
 [2. The Solution ](#s3) <br>
-[___2.1 Building the application](#s4) <br>
+&nbsp;&nbsp;&nbsp;&nbsp;[2.1 Building the application](#s4) <br>
 [3. Application's features](#s5) <br>
 [4. Future Work Ideas](#s6) <br>
 [5. Code Source](#s7) <br>
